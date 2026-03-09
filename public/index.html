@@ -1,1 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+    <header style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="color:var(--gold); font-weight:900;">NEBULA</div>
+        <button class="btn-gold" style="padding:5px 15px;">登入</button>
+    </header>
+    
+    <main id="game-grid" class="game-grid">Loading...</main>
 
+    <nav class="tab-bar">
+        <a href="index.html" class="tab-item active"><i>🏠</i><span>大廳</span></a>
+        <a href="report.html" class="tab-item"><i>📊</i><span>報表</span></a>
+        <a href="member.html" class="tab-item"><i>👤</i><span>會員</span></a>
+    </nav>
+
+    <script type="module">
+        import { initLobby } from '/assets/js/lobby.js';
+        initLobby();
+    </script>
+</body>
+</html>
