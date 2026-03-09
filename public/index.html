@@ -1,25 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>星雲娛樂城 | NEBULA CASINO</title>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-    <header style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-        <div style="color:var(--gold); font-weight:900;">NEBULA</div>
-        <button class="btn-gold" style="padding:5px 15px;">登入</button>
-    </header>
+    <div class="overlay" id="overlay"></div>
     
-    <main id="game-grid" class="game-grid">Loading...</main>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header"><h2>選單 MENU</h2></div>
+        <ul class="sidebar-menu">
+            <li data-category="all" class="active"><i>🏠</i> 全部遊戲</li>
+            <li data-category="LIVE"><i>📺</i> 真人 LIVE</li>
+            <li data-category="老虎機"><i>🎰</i> 熱門老虎機</li>
+            <li data-category="棋牌"><i>🃏</i> 棋牌中心</li>
+            <li data-category="限定"><i>🔞</i> 限定推薦</li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="lang-item">
+                <i>🌐</i> <span>Language / 語言設定</span>
+            </div>
+        </div>
+    </nav>
+
+    <header class="navbar">
+        <div class="menu-btn" id="menu-toggle">☰</div>
+        <div class="logo">NEBULA CASINO</div>
+        <div id="auth-zone">
+            <button class="btn-gold" style="padding: 6px 15px; font-size: 12px;">登入</button>
+        </div>
+    </header>
+
+    <div class="marquee-container" style="background: #1a1a1c; padding: 5px 15px; font-size: 11px; color: var(--gold); border-bottom: 1px solid var(--border);">
+        <marquee scrollamount="5">🔔 歡迎來到星雲娛樂城！首儲即送 100% 禮金，真人視訊、熱門老虎機即刻開跑...</marquee>
+    </div>
+
+    <section class="hero">
+        <div class="promo-banner" id="promo-banner">
+            <div class="banner-slide active" style="background-image: url('/assets/images/banners/banner1.jpg');"></div>
+            <div class="banner-slide" style="background-image: url('/assets/images/banners/banner2.jpg');"></div>
+            <div class="banner-dots" id="banner-dots"></div>
+        </div>
+    </section>
+
+    <div class="category-bar" style="display: flex; overflow-x: auto; padding: 5px 15px; gap: 10px; white-space: nowrap;">
+        <button class="page-btn active" data-category="all">全部</button>
+        <button class="page-btn" data-category="LIVE">真人</button>
+        <button class="page-btn" data-category="老虎機">電子</button>
+        <button class="page-btn" data-category="棋牌">棋牌</button>
+    </div>
+
+    <main class="game-grid" id="game-grid">
+        <div style="grid-column: span 2; text-align: center; padding: 50px; color: var(--text-dim);">
+            載入遊戲中...
+        </div>
+    </main>
 
     <nav class="tab-bar">
         <a href="index.html" class="tab-item active"><i>🏠</i><span>大廳</span></a>
+        <a href="#" class="tab-item"><i>💰</i><span>儲值</span></a>
+        <button class="tab-item" id="bottom-menu-btn"><i>☰</i><span>選單</span></button>
         <a href="report.html" class="tab-item"><i>📊</i><span>報表</span></a>
         <a href="member.html" class="tab-item"><i>👤</i><span>會員</span></a>
     </nav>
 
     <script type="module">
-        import { initLobby } from '/assets/js/lobby.js';
-        initLobby();
+        import { initLobby, filterGames } from '/assets/js/lobby.js';
+        
+        // 初始化大廳
+        document.addEventListener('DOMContentLoaded', () => {
+            initLobby();
+            
+            // 綁定選單開關
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const toggleFunc = () => {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+            };
+
+            document.getElementById('menu-toggle').onclick = toggleFunc;
+            document.getElementById('bottom-menu-btn').onclick = toggleFunc;
+            overlay.onclick = toggleFunc;
+
+            // 綁定分類過濾
+            document.querySelectorAll('[data-category]').forEach(el => {
+                el.onclick = function() {
+                    const cat = this.getAttribute('data-category');
+                    filterGames(cat);
+                    
+                    // 更新 UI 選中狀態
+                    document.querySelectorAll('[data-category]').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 如果是在側邊欄點擊，自動關閉側邊欄
+                    if(sidebar.classList.contains('open')) toggleFunc();
+                };
+            });
+        });
     </script>
 </body>
 </html>
