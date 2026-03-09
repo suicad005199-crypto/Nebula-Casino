@@ -1,25 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css"> <title>Nebula Casino</title>
 </head>
 <body>
-    <header class="card" style="display:flex; justify-content:space-between; align-items:center;">
-        <h1 style="color:#fccd4d; font-size:18px;">NEBULA</h1>
-        <div id="balance">$ 0.00</div>
-    </header>
-
     <div id="game-grid" class="game-grid"></div>
-
     <nav class="tab-bar">
-        <a href="index.html" class="tab-item active">🏠<br>大廳</a>
-        <a href="report.html" class="tab-item">📊<br>報表</a>
-        <a href="member.html" class="tab-item">👤<br>我的</a>
+        <a href="index.html" style="color:#fccd4d">🏠 大廳</a>
+        <a href="report.html" style="color:#8e8e93">📊 報表</a>
+        <a href="member.html" style="color:#8e8e93">👤 會員</a>
     </nav>
-
     <script type="module">
         import { renderLobby } from '/assets/js/lobby.js';
-        renderLobby('all');
+        renderLobby();
     </script>
 </body>
 </html>
