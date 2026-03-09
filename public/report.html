@@ -1,16 +1,129 @@
 <!DOCTYPE html>
-<html>
-<head><link rel="stylesheet" href="/assets/css/style.css"></head>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/style.css">
+    <title>帳務報表 - Nebula Casino</title>
+    <style>
+        .report-header {
+            padding: 20px 15px;
+            background: var(--card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 0.5px solid var(--border);
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 15px;
+        }
+        .stat-card {
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-label { font-size: 12px; color: var(--text-dim); margin-bottom: 5px; }
+        .stat-value { font-size: 18px; font-weight: 700; }
+        .win { color: #34c759; } /* iOS Green */
+        .loss { color: #ff3b30; } /* iOS Red */
+
+        .list-container { padding: 0 10px; }
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 10px;
+            border-bottom: 0.5px solid var(--border);
+        }
+        .game-info { display: flex; flex-direction: column; }
+        .game-name { font-weight: 600; font-size: 15px; }
+        .game-date { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+    </style>
+</head>
 <body>
-    <div style="padding:20px;">
-        <h2>歷史報表</h2>
-        <table style="width:100%; border-collapse:collapse; font-size:12px;">
-            <tr style="border-bottom:1px solid var(--border); color:var(--text-dim);">
-                <th style="text-align:left; padding:10px;">日期</th>
-                <th style="text-align:right;">損益</th>
-            </tr>
-            <tr><td style="padding:10px;">2026-03-09</td><td style="text-align:right; color:#ff4d4d;">-500.00</td></tr>
-        </table>
+
+    <div class="report-header">
+        <h2 style="margin:0; font-size:20px; color:#fccd4d;">帳務報表</h2>
+        <div style="font-size:12px; color:var(--text-dim);">最近 30 筆</div>
     </div>
+
+    <div class="summary-grid">
+        <div class="card stat-card">
+            <div class="stat-label">總投注</div>
+            <div id="total-bet" class="stat-value">$ 0</div>
+        </div>
+        <div class="card stat-card">
+            <div class="stat-label">總損益</div>
+            <div id="total-winloss" class="stat-value">$ 0</div>
+        </div>
+    </div>
+
+    <div class="list-container" id="report-list">
+        <div style="text-align:center; padding:50px; color:var(--text-dim);">載入中...</div>
+    </div>
+
+    <nav class="tab-bar">
+        <a href="index.html" class="tab-item">🏠<br>大廳</a>
+        <a href="report.html" class="tab-item active" style="color:#fccd4d">📊<br>報表</a>
+        <a href="member.html" class="tab-item">👤<br>會員</a>
+    </nav>
+
+    <script type="module">
+        import { apiFetch } from '/assets/js/api.js';
+        import { formatCurrency } from '/assets/js/utils.js';
+
+        async function loadReports() {
+            try {
+                // 從您建立的 reports 表撈取最新 30 筆
+                const data = await apiFetch('reports?order=created_at.desc&limit=30');
+                const list = document.getElementById('report-list');
+                
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; padding:50px; color:var(--text-dim);">暫無投注紀錄</div>';
+                    return;
+                }
+
+                let totalBet = 0;
+                let totalWinLoss = 0;
+
+                list.innerHTML = data.map(item => {
+                    totalBet += item.bet_amount;
+                    totalWinLoss += item.win_loss;
+                    
+                    const wlClass = item.win_loss >= 0 ? 'win' : 'loss';
+                    const prefix = item.win_loss >= 0 ? '+' : '';
+                    const date = new Date(item.created_at).toLocaleString('zh-TW', { hour12: false });
+
+                    return `
+                        <div class="report-item">
+                            <div class="game-info">
+                                <span class="game-name">${item.game_name}</span>
+                                <span class="game-date">${date}</span>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-size:14px;">${formatCurrency(item.bet_amount)}</div>
+                                <div class="${wlClass}" style="font-size:13px; font-weight:600;">
+                                    ${prefix}${formatCurrency(item.win_loss)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // 更新總量數據
+                document.getElementById('total-bet').innerText = `$ ${formatCurrency(totalBet)}`;
+                document.getElementById('total-winloss').innerText = `$ ${formatCurrency(totalWinLoss)}`;
+                document.getElementById('total-winloss').className = `stat-value ${totalWinLoss >= 0 ? 'win' : 'loss'}`;
+
+            } catch (err) {
+                console.error('報表載入失敗', err);
+                document.getElementById('report-list').innerHTML = '<div style="text-align:center; color:#ff3b30;">系統繁忙，請稍後再試</div>';
+            }
+        }
+
+        loadReports();
+    </script>
 </body>
 </html>
