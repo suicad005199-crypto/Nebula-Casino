@@ -1,13 +1,14 @@
-import { Games } from './games.js';
-import { Utils } from './utils.js';
+import { getGames } from './games.js';
 
-export async function initLobby() {
-    const list = await Games.getList();
+export const renderLobby = async (category) => {
     const grid = document.getElementById('game-grid');
-    grid.innerHTML = list.map(g => `
-        <div class="game-card">
-            <div class="game-img" style="background-image:url('/assets/images/games/${g.img}')"></div>
-            <div style="padding:8px; font-size:12px;">${g.title}</div>
+    grid.innerHTML = '<div class="loader">Loading...</div>';
+    const games = await getGames(category);
+    grid.innerHTML = games.map(g => `
+        <div class="card game-card">
+            <img src="${g.image_url}" alt="${g.title}">
+            <p>${g.title}</p>
+            <span class="provider">${g.provider}</span>
         </div>
     `).join('');
-}
+};
