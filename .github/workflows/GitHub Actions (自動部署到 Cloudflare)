@@ -1,14 +1,14 @@
-name: Cloudflare Pages Deployment
+name: Deploy to Cloudflare Pages
 on: [push]
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: nebula-casino
-          directory: .
+          directory: public # 指向您的 public 資料夾
