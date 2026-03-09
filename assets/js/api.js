@@ -1,18 +1,15 @@
-export const API = {
-    // 這裡替換成你的 Supabase URL 與 Key
-    URL: 'https://your-project.supabase.co',
-    KEY: 'your-anon-key',
+export const API_URL = import.meta.env?.VITE_SUPABASE_URL || '';
+export const API_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
 
-    async fetch(path, options = {}) {
-        const res = await fetch(`${this.URL}/rest/v1/${path}`, {
-            ...options,
-            headers: {
-                'apikey': this.KEY,
-                'Authorization': `Bearer ${localStorage.getItem('sb-token') || this.KEY}`,
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-        return res.json();
-    }
+export const apiFetch = async (path, options = {}) => {
+    const res = await fetch(`${API_URL}/rest/v1/${path}`, {
+        ...options,
+        headers: {
+            'apikey': API_KEY,
+            'Authorization': `Bearer ${localStorage.getItem('sb-token') || API_KEY}`,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+    return res.json();
 };
