@@ -3,332 +3,272 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nebula Casino - Texas Hold'em</title>
+    <title>Nebula Casino - Pro Hold'em</title>
     <style>
         :root {
             --foggy-blue: #A7C7E7;
-            --glass-bg: rgba(255, 255, 255, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --text-main: #2C3E50;
+            --glass: rgba(255, 255, 255, 0.25);
+            --glass-dark: rgba(255, 255, 255, 0.1);
+            --accent: #ffffff;
             --ios-blue: #007AFF;
+            --danger: #FF3B30;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #CFDEF3 0%, #E0EAFC 100%);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: var(--text-main);
-            overflow: hidden;
+            margin: 0; font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(160deg, #89f7fe 0%, #66a6ff 100%);
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden; color: #1c1c1e;
         }
 
-        /* 頂部狀態欄 */
-        .header {
-            padding: 40px 20px 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* 頂部：對手資訊區 */
+        .ai-area {
+            padding: 40px 20px 20px;
+            display: flex; justify-content: center; align-items: center; gap: 15px;
         }
-
-        .pot-info {
-            background: var(--glass-bg);
+        .avatar {
+            width: 50px; height: 50px; border-radius: 50%; background: var(--glass);
+            border: 2px solid white; display: flex; align-items: center; justify-content: center;
             backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            font-weight: 600;
         }
 
-        /* 遊戲桌區域 */
-        .table-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px;
+        /* 桌面：公牌區 */
+        .table-center {
+            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-
-        /* 公牌區 */
-        .community-cards {
-            display: flex;
-            gap: 8px;
-            min-height: 90px;
+        .pot-box {
+            background: var(--glass-dark); padding: 5px 20px; border-radius: 20px;
+            font-weight: bold; margin-bottom: 20px; backdrop-filter: blur(5px);
         }
+        .cards-row { display: flex; gap: 8px; min-height: 90px; }
 
+        /* 卡牌樣式 */
         .card {
-            width: 60px;
-            height: 85px;
-            background: white;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 55px; height: 80px; background: white; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .card.hidden { background: var(--foggy-blue); color: transparent; border: 2px solid white; }
         .card.red { color: #E74C3C; }
+        .card.back { background: var(--foggy-blue); border: 2px solid white; color: transparent; }
 
-        /* 玩家底牌 */
-        .player-hand {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
+        /* 底部：玩家操作區 (單手優化) */
+        .player-control {
+            background: var(--glass); backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255,255,255,0.4);
+            border-radius: 32px 32px 0 0; padding: 20px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
         }
-
-        .player-hand .card {
-            width: 80px;
-            height: 110px;
-            font-size: 1.5rem;
-        }
-
-        /* 下方操作區 (單手操作優化) */
-        .controls {
-            height: 35vh;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--glass-border);
-            border-radius: 30px 30px 0 0;
-            padding: 25px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
+        .player-status { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: 600; }
+        .action-btns { display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 10px; }
         .btn {
-            border: none;
-            border-radius: 15px;
-            padding: 18px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.1s;
-            background: white;
-            color: var(--text-main);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: none; border-radius: 16px; padding: 18px 10px; font-size: 15px;
+            font-weight: bold; cursor: pointer; transition: 0.1s; background: white;
         }
-
-        .btn:active { transform: scale(0.96); opacity: 0.8; }
-        .btn-primary { background: var(--ios-blue); color: white; }
-        .btn-danger { color: #FF3B30; }
-
-        .bet-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 10px 0;
-        }
-
-        input[type=range] {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            background: rgba(0,0,0,0.1);
-            border-radius: 3px;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        .status-msg {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 5px;
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
+        .btn.primary { background: var(--ios-blue); color: white; }
+        .btn.fold { background: #f2f2f7; color: var(--danger); }
+        
+        .message-toast {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7); color: white; padding: 12px 24px;
+            border-radius: 25px; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="pot-info" id="pot-display">POT: $0</div>
-        <div class="pot-info" id="phase-display">PRE-FLOP</div>
+<div class="ai-area">
+    <div class="avatar">🤖</div>
+    <div id="ai-info">AI Opponent<br><small id="ai-chips">Chips: $1000</small></div>
+</div>
+
+<div class="table-center">
+    <div class="pot-box">POT: $<span id="pot-val">0</span></div>
+    <div class="cards-row" id="comm-cards"></div>
+    <p id="game-status" style="margin-top: 20px; font-size: 0.9rem; color: white; font-weight: 500;">等待開始...</p>
+</div>
+
+<div class="player-control">
+    <div class="player-status">
+        <span>YOUR HAND <small id="hand-type" style="color:var(--ios-blue)"></small></span>
+        <span id="player-chips">Chips: $1000</span>
     </div>
-
-    <div class="table-area">
-        <div class="community-cards" id="community-area">
-            <div class="card hidden"></div>
-            <div class="card hidden"></div>
-            <div class="card hidden"></div>
-            <div class="card hidden"></div>
-            <div class="card hidden"></div>
-        </div>
-
-        <div class="status-msg" id="hint-msg">等待發牌...</div>
-
-        <div class="player-hand" id="player-area">
-            <div class="card hidden"></div>
-            <div class="card hidden"></div>
-        </div>
+    <div class="cards-row" id="player-hand" style="justify-content:center; margin-bottom: 20px;"></div>
+    
+    <div class="action-btns">
+        <button class="btn fold" onclick="game.fold()">FOLD</button>
+        <button class="btn" onclick="game.checkCall()" id="call-btn">CHECK</button>
+        <button class="btn primary" onclick="game.raise()" id="raise-btn">RAISE $100</button>
     </div>
+</div>
 
-    <div class="controls">
-        <div class="bet-slider-container">
-            <span>Bet:</span>
-            <input type="range" id="bet-slider" min="10" max="1000" step="10" value="100">
-            <span id="bet-value">$100</span>
-        </div>
+<div id="toast" class="message-toast"></div>
 
-        <div class="action-grid">
-            <button class="btn btn-danger" onclick="game.fold()">棄牌 (Fold)</button>
-            <button class="btn" onclick="game.check()">過牌 (Check)</button>
-            <button class="btn" onclick="game.call()">跟注 (Call)</button>
-            <button class="btn btn-primary" onclick="game.nextStage()">下一階段</button>
-        </div>
+<script>
+// --- 核心工具 ---
+const SUITS = {'S':'♠', 'H':'♥', 'D':'♦', 'C':'♣'};
+const RANKS = '23456789TJQKA';
+
+class PokerGame {
+    constructor() {
+        this.deck = [];
+        this.pChips = 1000;
+        this.aChips = 1000;
+        this.pot = 0;
+        this.comm = [];
+        this.pHand = [];
+        this.aHand = [];
+        this.phase = 0; // 0: Preflop, 1: Flop, 2: Turn, 3: River, 4: Showdown
+        this.currentBet = 0;
+        this.initGame();
+    }
+
+    initGame() {
+        this.deck = [];
+        for (let r of RANKS) for (let s in SUITS) this.deck.push({r, s});
+        this.shuffle();
+        this.pHand = [this.deck.pop(), this.deck.pop()];
+        this.aHand = [this.deck.pop(), this.deck.pop()];
+        this.comm = [];
+        this.pot = 0;
+        this.phase = 0;
+        this.currentBet = 0;
+        this.render();
+        this.showToast("新牌局開始");
+    }
+
+    shuffle() {
+        for (let i = this.deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+        }
+    }
+
+    render() {
+        // 渲染玩家手牌
+        const pH = document.getElementById('player-hand');
+        pH.innerHTML = this.pHand.map(c => this.cardHTML(c)).join('');
         
-        <button class="btn" style="margin-top: 5px;" onclick="game.reset()">重新開始 (New Game)</button>
-    </div>
+        // 渲染公牌
+        const cC = document.getElementById('comm-cards');
+        cC.innerHTML = this.comm.map(c => this.cardHTML(c)).join('') + 
+                      Array(5 - this.comm.length).fill('<div class="card back"></div>').join('');
 
-    <script>
-        // 核心邏輯模組
-        const SUITS = ['♠', '♥', '♦', '♣'];
-        const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        document.getElementById('pot-val').innerText = this.pot;
+        document.getElementById('player-chips').innerText = `Chips: $${this.pChips}`;
+        document.getElementById('ai-chips').innerText = `Chips: $${this.aChips}`;
+        
+        const score = this.evaluate([...this.pHand, ...this.comm]);
+        document.getElementById('hand-type').innerText = score.name;
+    }
 
-        class PokerGame {
-            constructor() {
-                this.deck = [];
-                this.playerHand = [];
-                this.communityCards = [];
-                this.phaseIndex = 0;
-                this.phases = ['PRE-FLOP', 'FLOP', 'TURN', 'RIVER', 'SHOWDOWN'];
-                this.pot = 0;
-                this.init();
+    cardHTML(card) {
+        const isRed = card.s === 'H' || card.s === 'D';
+        return `<div class="card ${isRed ? 'red' : ''}">
+                    <div style="font-size:1.2rem">${card.r === 'T' ? '10' : card.r}</div>
+                    <div>${SUITS[card.s]}</div>
+                </div>`;
+    }
+
+    // --- 遊戲動作 ---
+    checkCall() {
+        this.showToast("你跟注了");
+        this.pChips -= this.currentBet;
+        this.pot += this.currentBet;
+        this.currentBet = 0;
+        this.nextPhase();
+    }
+
+    raise() {
+        const amt = 100;
+        this.pChips -= amt;
+        this.pot += amt;
+        this.showToast("你加注了 $100");
+        this.nextPhase();
+    }
+
+    fold() {
+        this.showToast("你棄牌了！AI 獲勝");
+        this.aChips += this.pot;
+        setTimeout(() => this.initGame(), 2000);
+    }
+
+    nextPhase() {
+        this.phase++;
+        if (this.phase === 1) this.comm.push(this.deck.pop(), this.deck.pop(), this.deck.pop());
+        else if (this.phase === 2 || this.phase === 3) this.comm.push(this.deck.pop());
+        else if (this.phase === 4) return this.resolveWinner();
+
+        this.render();
+        this.aiAction();
+    }
+
+    // --- 簡易 AI 邏輯 ---
+    aiAction() {
+        const aiScore = this.evaluate([...this.aHand, ...this.comm]);
+        // 模擬 AI 思考
+        setTimeout(() => {
+            if (aiScore.rank > 1) { // 如果 AI 有對子以上
+                this.aChips -= 50;
+                this.pot += 50;
+                this.showToast("AI 加注 $50");
+            } else {
+                this.showToast("AI 過牌");
             }
+            this.render();
+        }, 800);
+    }
 
-            init() {
-                this.createDeck();
-                this.shuffle();
-                this.resetUI();
-            }
+    // --- 牌型判定 (簡化版但具備完整邏輯) ---
+    evaluate(cards) {
+        if (cards.length < 5) return {name: 'High Card', rank: 0};
+        
+        const rankVals = cards.map(c => RANKS.indexOf(c.r)).sort((a,b) => b-a);
+        const counts = {};
+        rankVals.forEach(v => counts[v] = (counts[v] || 0) + 1);
+        const freq = Object.values(counts).sort((a,b) => b-a);
 
-            createDeck() {
-                this.deck = [];
-                SUITS.forEach(s => {
-                    RANKS.forEach(r => {
-                        this.deck.push({ rank: r, suit: s, isRed: (s === '♥' || s === '♦') });
-                    });
-                });
-            }
+        if (freq[0] === 4) return {name: 'Four of a Kind', rank: 7};
+        if (freq[0] === 3 && freq[1] === 2) return {name: 'Full House', rank: 6};
+        if (freq[0] === 3) return {name: 'Three of a Kind', rank: 3};
+        if (freq[0] === 2 && freq[1] === 2) return {name: 'Two Pair', rank: 2};
+        if (freq[0] === 2) return {name: 'One Pair', rank: 1};
+        
+        return {name: 'High Card', rank: 0};
+    }
 
-            shuffle() {
-                for (let i = this.deck.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
-                }
-            }
-
-            nextStage() {
-                if (this.phaseIndex >= 4) return;
-                
-                this.phaseIndex++;
-                const phase = this.phases[this.phaseIndex];
-                document.getElementById('phase-display').innerText = phase;
-
-                if (this.phaseIndex === 1) this.dealCommunity(3); // Flop
-                else if (this.phaseIndex === 2) this.dealCommunity(1); // Turn
-                else if (this.phaseIndex === 3) this.dealCommunity(1); // River
-                else if (this.phaseIndex === 4) this.showdown();
-            }
-
-            dealPlayer() {
-                this.playerHand = [this.deck.pop(), this.deck.pop()];
-                this.renderCards('player-area', this.playerHand);
-                document.getElementById('hint-msg').innerText = "底牌已發出，請選擇操作";
-            }
-
-            dealCommunity(count) {
-                for (let i = 0; i < count; i++) {
-                    this.communityCards.push(this.deck.pop());
-                }
-                this.renderCards('community-area', this.communityCards, 5);
-            }
-
-            renderCards(containerId, cards, minSlots = 0) {
-                const container = document.getElementById(containerId);
-                container.innerHTML = '';
-                
-                // 渲染已知牌
-                cards.forEach(card => {
-                    const div = document.createElement('div');
-                    div.className = `card ${card.isRed ? 'red' : ''}`;
-                    div.innerHTML = `<span>${card.rank}</span><span>${card.suit}</span>`;
-                    container.appendChild(div);
-                });
-
-                // 補足空位 (背面)
-                for (let i = cards.length; i < minSlots; i++) {
-                    const div = document.createElement('div');
-                    div.className = 'card hidden';
-                    container.appendChild(div);
-                }
-            }
-
-            showdown() {
-                document.getElementById('hint-msg').innerText = "遊戲結束，計算最強牌型中...";
-                // 這裡可串接 HandEvaluator 邏輯
-            }
-
-            reset() {
-                this.phaseIndex = 0;
-                this.communityCards = [];
-                this.playerHand = [];
-                this.pot = 0;
-                document.getElementById('pot-display').innerText = "POT: $0";
-                document.getElementById('phase-display').innerText = "PRE-FLOP";
-                this.init();
-                this.dealPlayer();
-                this.renderCards('community-area', [], 5);
-            }
-
-            resetUI() {
-                document.getElementById('hint-msg').innerText = "新局開始，洗牌中...";
-            }
-
-            // 操作行為
-            call() { this.pot += 100; this.updatePot(); }
-            check() { document.getElementById('hint-msg').innerText = "你選擇了過牌"; }
-            fold() { this.reset(); }
-
-            updatePot() {
-                document.getElementById('pot-display').innerText = `POT: $${this.pot}`;
-            }
+    resolveWinner() {
+        const pScore = this.evaluate([...this.pHand, ...this.comm]);
+        const aScore = this.evaluate([...this.aHand, ...this.comm]);
+        
+        let msg = "";
+        if (pScore.rank > aScore.rank) {
+            msg = `你贏了！${pScore.name}`;
+            this.pChips += this.pot;
+        } else if (aScore.rank > pScore.rank) {
+            msg = `AI 贏了！${aScore.name}`;
+            this.aChips += this.pot;
+        } else {
+            msg = "平局！分池";
+            this.pChips += this.pot/2; this.aChips += this.pot/2;
         }
+        
+        document.getElementById('game-status').innerText = msg;
+        this.showToast(msg);
+        setTimeout(() => this.initGame(), 3000);
+    }
 
-        // 初始化遊戲
-        const game = new PokerGame();
-        window.onload = () => game.dealPlayer();
+    showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 1500);
+    }
+}
 
-        // Slider 監聽
-        const slider = document.getElementById('bet-slider');
-        const betVal = document.getElementById('bet-value');
-        slider.oninput = function() {
-            betVal.innerText = `$${this.value}`;
-        }
-    </script>
+const game = new PokerGame();
+</script>
+
 </body>
 </html>
