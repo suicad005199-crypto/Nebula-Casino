@@ -3,181 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nebula Casino - Pro Table</title>
+    <title>Nebula Casino | Pro Hold'em</title>
     <style>
         :root {
-            --foggy-blue: #7ba4c9; /* 牌桌主色 */
-            --foggy-dark: #5a85aa;
-            --glass-panel: rgba(255, 255, 255, 0.15);
-            --border-glow: rgba(255, 255, 255, 0.3);
+            --foggy-blue: #7ba4c9;
+            --foggy-dark: #4a7296;
+            --glass: rgba(255, 255, 255, 0.12);
             --upoker-green: #34C759;
             --upoker-red: #FF3B30;
+            --gold: #FFD700;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0; padding: 0; background: #1a1c23; /* 深色背景襯托牌桌 */
-            font-family: -apple-system, sans-serif; height: 100vh;
+            margin: 0; padding: 0; background: #0f1218;
+            font-family: -apple-system, system-ui, sans-serif; height: 100vh;
             display: flex; flex-direction: column; color: white; overflow: hidden;
         }
 
-        /* --- 牌桌區域 --- */
+        /* --- 專業橢圓牌桌 --- */
         .table-container {
             flex: 1; position: relative; display: flex; 
-            justify-content: center; align-items: center; padding-top: 20px;
+            justify-content: center; align-items: center;
         }
 
         .poker-table {
-            width: 90%; height: 65%;
+            width: 92%; height: 68%;
             background: radial-gradient(ellipse at center, var(--foggy-blue) 0%, var(--foggy-dark) 100%);
-            border-radius: 120px; /* 橢圓形牌桌 */
-            border: 6px solid #2c3e50;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5) inset, 0 10px 20px rgba(0,0,0,0.4);
+            border-radius: 140px;
+            border: 8px solid #222;
+            box-shadow: 0 0 50px rgba(0,0,0,0.6) inset, 0 15px 30px rgba(0,0,0,0.5);
             position: relative;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
 
-        /* --- 座位與玩家資訊 --- */
+        /* --- 座位系統 --- */
         .seat {
-            position: absolute; width: 60px; display: flex; flex-direction: column; align-items: center;
+            position: absolute; width: 70px; display: flex; flex-direction: column; align-items: center;
+            transition: all 0.3s;
         }
-        .seat.top { top: -30px; }
-        .seat.left { left: -10px; top: 40%; }
-        .seat.right { right: -10px; top: 40%; }
+        .seat.active { transform: scale(1.15); filter: drop-shadow(0 0 10px var(--gold)); }
+        .seat.pos-0 { bottom: -35px; } /* 玩家 (Hero) */
+        .seat.pos-1 { left: -15px; top: 35%; }
+        .seat.pos-2 { top: -45px; }
+        .seat.pos-3 { right: -15px; top: 35%; }
         
         .avatar {
-            width: 50px; height: 50px; border-radius: 50%; background: #333;
-            border: 2px solid var(--foggy-blue); display: flex; align-items: center; justify-content: center;
-            font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 2;
+            width: 55px; height: 55px; border-radius: 50%; background: #222;
+            border: 2px solid #555; display: flex; align-items: center; justify-content: center;
+            font-size: 24px; position: relative;
         }
-        .chip-stack {
-            background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 10px;
-            font-size: 11px; margin-top: -10px; z-index: 3; border: 1px solid var(--border-glow);
+        .chip-badge {
+            background: rgba(0,0,0,0.85); padding: 2px 10px; border-radius: 10px;
+            font-size: 11px; margin-top: -12px; z-index: 5; border: 1px solid rgba(255,255,255,0.2);
+            color: var(--gold);
         }
         .dealer-btn {
-            position: absolute; width: 18px; height: 18px; background: white; color: black;
-            border-radius: 50%; font-size: 10px; font-weight: bold; line-height: 18px; text-align: center;
-            right: -10px; top: 30px; box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            position: absolute; width: 20px; height: 20px; background: white; color: black;
+            border-radius: 50%; font-size: 11px; font-weight: 900; line-height: 20px; 
+            text-align: center; right: -8px; bottom: 5px;
         }
 
-        /* --- 中央公牌與底池 --- */
-        .pot-area {
-            background: rgba(0,0,0,0.4); padding: 5px 15px; border-radius: 20px;
-            font-size: 13px; font-weight: bold; margin-bottom: 15px;
+        /* --- 牌桌中央 --- */
+        .pot-box {
+            background: rgba(0,0,0,0.5); padding: 6px 20px; border-radius: 20px;
+            font-size: 14px; font-weight: bold; margin-bottom: 15px; border: 1px solid var(--glass);
         }
-        .community-cards { display: flex; gap: 5px; }
+        .community-cards { display: flex; gap: 6px; min-height: 70px; }
         .card {
-            width: 45px; height: 65px; background: white; border-radius: 5px;
+            width: 48px; height: 68px; background: white; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: 800; color: #333; font-size: 1.2rem;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            font-weight: 800; color: #222; font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            animation: cardPop 0.3s ease-out;
         }
         .card.red { color: var(--upoker-red); }
-        .card.back { background: repeating-linear-gradient(45deg, #2c3e50, #2c3e50 5px, #34495e 5px, #34495e 10px); border: 1px solid white; }
+        .card.back { background: linear-gradient(135deg, #1e3a8a, #3b82f6); border: 2px solid white; color: transparent; }
 
-        /* --- 玩家底牌 (特大化) --- */
-        .hero-hand {
-            position: absolute; bottom: -20px; display: flex; gap: 5px; transform: scale(1.3);
-        }
+        @keyframes cardPop { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- 底部操作區 (UPoker Style 滑桿與按鈕) --- */
+        /* --- 玩家底牌 (Hero) --- */
+        .hero-hand { display: flex; gap: 8px; margin-top: 15px; }
+
+        /* --- 底部控制面板 --- */
         .action-panel {
-            height: 200px; background: #23252d; border-top: 1px solid #333;
-            padding: 15px; display: flex; flex-direction: column; justify-content: space-between;
+            height: 220px; background: #16181d; border-top: 2px solid #2a2d35;
+            padding: 15px 20px; display: flex; flex-direction: column; justify-content: space-around;
         }
         
-        .slider-row {
-            display: flex; align-items: center; gap: 15px; margin-bottom: 10px;
-        }
-        .slider-row input[type=range] {
-            flex: 1; -webkit-appearance: none; height: 8px; background: #444; border-radius: 4px;
-        }
-        .slider-row input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 28px; height: 28px; background: var(--foggy-blue);
-            border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        .raise-amount-box {
-            background: #111; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 16px;
+        .slider-row { display: flex; align-items: center; gap: 15px; }
+        input[type=range] { flex: 1; height: 10px; background: #333; border-radius: 5px; -webkit-appearance: none; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 32px; height: 32px; background: white; border-radius: 50%; border: 4px solid var(--foggy-blue);
         }
 
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .action-btn {
-            border: none; padding: 15px 0; border-radius: 8px; font-size: 16px; font-weight: bold;
-            display: flex; flex-direction: column; align-items: center; color: white; cursor: pointer;
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .act-btn {
+            border: none; padding: 18px 0; border-radius: 12px; font-size: 17px; font-weight: bold;
+            color: white; cursor: pointer; transition: 0.1s;
         }
-        .action-btn small { font-size: 11px; opacity: 0.8; margin-top: 3px; }
-        
-        .btn-fold { background: #3d404a; }
-        .btn-call { background: var(--upoker-green); }
-        .btn-raise { background: var(--foggy-blue); }
-        .action-btn:active { transform: translateY(2px); }
+        .act-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .act-btn.fold { background: #333; }
+        .act-btn.call { background: var(--upoker-green); }
+        .act-btn.raise { background: var(--foggy-blue); }
 
+        #game-log {
+            position: fixed; top: 10%; width: 100%; text-align: center;
+            font-size: 13px; color: var(--gold); text-shadow: 0 0 5px black;
+        }
     </style>
 </head>
 <body>
 
+<div id="game-log">等待新局開始...</div>
+
 <div class="table-container">
     <div class="poker-table">
+        <div id="seats-layer"></div>
+
+        <div class="pot-box">POT: $<span id="main-pot">0</span></div>
+        <div class="community-cards" id="comm-cards"></div>
         
-        <div class="seat left">
-            <div class="avatar">👨‍🎤</div>
-            <div class="chip-stack">2500</div>
-        </div>
-
-        <div class="seat top">
-            <div class="avatar">🤖<div class="dealer-btn">D</div></div>
-            <div class="chip-stack">1800</div>
-        </div>
-
-        <div class="seat right">
-            <div class="avatar">🥷</div>
-            <div class="chip-stack">3200</div>
-        </div>
-
-        <div class="pot-area">POT: 150 <span style="color:#aaa; font-weight:normal; margin-left:10px;">Call: 50</span></div>
-        <div class="community-cards">
-            <div class="card red"><div>K</div><div>♥</div></div>
-            <div class="card"><div>8</div><div>♠</div></div>
-            <div class="card red"><div>2</div><div>♦</div></div>
-            <div class="card back"></div>
-            <div class="card back"></div>
-        </div>
-
-        <div class="hero-hand">
-            <div class="card red"><div>A</div><div>♥</div></div>
-            <div class="card"><div>A</div><div>♣</div></div>
-        </div>
+        <div class="hero-hand" id="hero-cards"></div>
     </div>
 </div>
 
 <div class="action-panel">
     <div class="slider-row">
-        <span style="font-size: 12px; color: #888;">Min</span>
-        <input type="range" id="raise-slider" min="100" max="1000" step="50" value="150" oninput="updateRaiseBtn()">
-        <span style="font-size: 12px; color: #888;">All-in</span>
+        <span id="min-raise">Min</span>
+        <input type="range" id="raise-slider" min="100" max="1000" value="100" oninput="document.getElementById('raise-amount').innerText = this.value">
+        <span>All-in</span>
     </div>
     
     <div class="btn-row">
-        <button class="action-btn btn-fold">
-            FOLD
-        </button>
-        <button class="action-btn btn-call">
-            CALL
-            <small>50</small>
-        </button>
-        <button class="action-btn btn-raise" id="btn-raise">
-            RAISE TO
-            <small id="raise-val">150</small>
-        </button>
+        <button class="act-btn fold" onclick="game.handleAction('FOLD')">FOLD</button>
+        <button class="act-btn call" onclick="game.handleAction('CALL')" id="call-btn">CHECK</button>
+        <button class="act-btn raise" onclick="game.handleAction('RAISE')" id="raise-btn">RAISE<br><small>$<span id="raise-amount">100</span></small></button>
     </div>
 </div>
 
 <script>
-    // 簡單的滑桿連動 UI 邏輯
-    function updateRaiseBtn() {
-        const val = document.getElementById('raise-slider').value;
-        document.getElementById('raise-val').innerText = val;
+    const SUITS = {S:'♠', H:'♥', D:'♦', C:'♣'};
+    const RANKS = ['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
+
+    class PokerEngine {
+        constructor() {
+            this.players = [
+                { id: 0, name: 'You', chips: 2000, isHero: true, avatar: '👤' },
+                { id: 1, name: 'Bot A', chips: 2000, isHero: false, avatar: '🤖' },
+                { id: 2, name: 'Bot B', chips: 2000, isHero: false, avatar: '👽' },
+                { id: 3, name: 'Bot C', chips: 2000, isHero: false, avatar: '🤡' }
+            ];
+            this.pot = 0;
+            this.deck = [];
+            this.commCards = [];
+            this.dealerIdx = 0;
+            this.activeIdx = 0;
+            this.currentCall = 0;
+            this.phase = 'PREFLOP'; // PREFLOP, FLOP, TURN, RIVER, SHOWDOWN
+            this.initRound();
+        }
+
+        initRound() {
+            this.deck = [];
+            for (let r of RANKS) for (let s in SUITS) this.deck.push({r, s});
+            this.deck.sort(() => Math.random() - 0.5);
+            
+            this.commCards = [];
+            this.pot = 0;
+            this.currentCall = 40; // 大盲 40
+            this.phase = 'PREFLOP';
+            
+            // 盲注扣除 (簡化版：Hero 固定小盲，Next 固定大盲)
+            this.players[0].chips -= 20;
+            this.players[1].chips -= 40;
+            this.pot = 60;
+            
+            this.players.forEach(p => p.hand = [this.deck.pop(), this.deck.pop()]);
+            this.activeIdx = 0; // 玩家開始
+            this.render();
+            this.log(`新局開始：盲注 20/40`);
+        }
+
+        render() {
+            // 渲染座位
+            const layer = document.getElementById('seats-layer');
+            layer.innerHTML = this.players.map((p, i) => `
+                <div class="seat pos-${i} ${this.activeIdx === i ? 'active' : ''}">
+                    <div class="avatar">${p.avatar} ${this.dealerIdx === i ? '<div class="dealer-btn">D</div>' : ''}</div>
+                    <div class="chip-badge">$${p.chips}</div>
+                </div>
+            `).join('');
+
+            // 渲染公牌
+            const commDiv = document.getElementById('comm-cards');
+            commDiv.innerHTML = this.commCards.map(c => this.cardHTML(c)).join('') + 
+                               Array(5 - this.commCards.length).fill('<div class="card back"></div>').join('');
+
+            // 渲染玩家底牌
+            const heroDiv = document.getElementById('hero-cards');
+            heroDiv.innerHTML = this.players[0].hand.map(c => this.cardHTML(c)).join('');
+
+            document.getElementById('main-pot').innerText = this.pot;
+            document.getElementById('call-btn').innerHTML = this.currentCall > 0 ? `CALL<br><small>$${this.currentCall}</small>` : "CHECK";
+        }
+
+        cardHTML(card) {
+            const isRed = (card.s === 'H' || card.s === 'D');
+            return `<div class="card ${isRed ? 'red' : ''}">
+                        <div>${card.r === 'T' ? '10' : card.r}</div>
+                        <div>${SUITS[card.s]}</div>
+                    </div>`;
+        }
+
+        handleAction(type) {
+            if (this.activeIdx !== 0) return; // 不是玩家回合
+
+            if (type === 'FOLD') this.initRound();
+            if (type === 'CALL') {
+                this.players[0].chips -= this.currentCall;
+                this.pot += this.currentCall;
+            }
+            if (type === 'RAISE') {
+                const amt = parseInt(document.getElementById('raise-slider').value);
+                this.players[0].chips -= amt;
+                this.pot += amt;
+            }
+
+            this.log("等待對手發言...");
+            this.activeIdx = 1; 
+            this.render();
+            
+            // 模擬機器人動作
+            setTimeout(() => this.botTurn(), 1000);
+        }
+
+        botTurn() {
+            // 簡化：機器人全部跟注
+            for(let i=1; i<4; i++) {
+                this.players[i].chips -= 40;
+                this.pot += 40;
+            }
+            this.nextPhase();
+        }
+
+        nextPhase() {
+            if (this.phase === 'PREFLOP') {
+                this.phase = 'FLOP';
+                this.commCards.push(this.deck.pop(), this.deck.pop(), this.deck.pop());
+            } else if (this.phase === 'FLOP') {
+                this.phase = 'TURN';
+                this.commCards.push(this.deck.pop());
+            } else if (this.phase === 'TURN') {
+                this.phase = 'RIVER';
+                this.commCards.push(this.deck.pop());
+            } else {
+                this.log("結算完成，新局開始");
+                return setTimeout(() => this.initRound(), 2000);
+            }
+            
+            this.activeIdx = 0;
+            this.currentCall = 0;
+            this.log(`進入階段：${this.phase}`);
+            this.render();
+        }
+
+        log(msg) {
+            document.getElementById('game-log').innerText = msg;
+        }
     }
+
+    const game = new PokerEngine();
 </script>
 
 </body>
