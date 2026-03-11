@@ -3,271 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nebula Casino - Pro Hold'em</title>
+    <title>Nebula Casino | Texas Evolution</title>
     <style>
         :root {
-            --foggy-blue: #A7C7E7;
-            --glass: rgba(255, 255, 255, 0.25);
-            --glass-dark: rgba(255, 255, 255, 0.1);
-            --accent: #ffffff;
-            --ios-blue: #007AFF;
-            --danger: #FF3B30;
+            --nebula-blue: #A7C7E7;
+            --neon-glow: #00d2ff;
+            --glass-white: rgba(255, 255, 255, 0.15);
+            --bg-deep: #0f172a;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0; font-family: -apple-system, system-ui, sans-serif;
-            background: linear-gradient(160deg, #89f7fe 0%, #66a6ff 100%);
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden; color: #1c1c1e;
+            margin: 0; padding: 0; background: var(--bg-deep);
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: white; height: 100vh; overflow: hidden;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
         }
 
-        /* 頂部：對手資訊區 */
-        .ai-area {
-            padding: 40px 20px 20px;
-            display: flex; justify-content: center; align-items: center; gap: 15px;
+        /* 賣點 1: Oracle HUD (機率顯示器) */
+        .oracle-hud {
+            position: fixed; top: 15%; width: 100%; text-align: center;
+            font-family: 'Courier New', monospace; z-index: 10;
         }
-        .avatar {
-            width: 50px; height: 50px; border-radius: 50%; background: var(--glass);
-            border: 2px solid white; display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(10px);
+        .probability-meter {
+            background: rgba(0, 210, 255, 0.1); border: 1px solid var(--neon-glow);
+            padding: 5px 15px; border-radius: 50px; font-size: 14px;
+            color: var(--neon-glow); box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+            display: inline-block; animation: pulse 2s infinite;
         }
 
-        /* 桌面：公牌區 */
-        .table-center {
-            flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+        /* 賣點 2: Prism-Glass 卡牌視覺 */
+        .card-container {
+            display: flex; gap: 8px; justify-content: center; height: 100px;
         }
-        .pot-box {
-            background: var(--glass-dark); padding: 5px 20px; border-radius: 20px;
-            font-weight: bold; margin-bottom: 20px; backdrop-filter: blur(5px);
-        }
-        .cards-row { display: flex; gap: 8px; min-height: 90px; }
-
-        /* 卡牌樣式 */
         .card {
-            width: 55px; height: 80px; background: white; border-radius: 8px;
+            width: 65px; height: 95px; background: white; border-radius: 10px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 800; color: #1e293b; position: relative;
+            box-shadow: 0 0 20px rgba(167, 199, 231, 0.4);
+            transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .card.red { color: #E74C3C; }
-        .card.back { background: var(--foggy-blue); border: 2px solid white; color: transparent; }
+        .card.red { color: #ff3b30; }
+        .card.back {
+            background: linear-gradient(135deg, #a7c7e7 0%, #66a6ff 100%);
+            border: 2px solid rgba(255,255,255,0.8);
+        }
 
-        /* 底部：玩家操作區 (單手優化) */
-        .player-control {
-            background: var(--glass); backdrop-filter: blur(25px);
-            border-top: 1px solid rgba(255,255,255,0.4);
-            border-radius: 32px 32px 0 0; padding: 20px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+        /* 賣點 3: Radial Control (單手弧形控制) */
+        .control-wheel {
+            position: fixed; bottom: -30px; left: 0; width: 100%;
+            height: 250px; background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(30px); border-top: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+            padding-top: 40px; display: flex; flex-direction: column; align-items: center;
         }
-        .player-status { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: 600; }
-        .action-btns { display: grid; grid-template-columns: 1fr 1.5fr 1.5fr; gap: 10px; }
-        .btn {
-            border: none; border-radius: 16px; padding: 18px 10px; font-size: 15px;
-            font-weight: bold; cursor: pointer; transition: 0.1s; background: white;
+        .main-actions {
+            display: flex; justify-content: center; gap: 20px; width: 90%;
         }
-        .btn:active { transform: scale(0.95); opacity: 0.8; }
-        .btn.primary { background: var(--ios-blue); color: white; }
-        .btn.fold { background: #f2f2f7; color: var(--danger); }
-        
-        .message-toast {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7); color: white; padding: 12px 24px;
-            border-radius: 25px; font-size: 14px; opacity: 0; pointer-events: none; transition: 0.3s;
+        .action-btn {
+            width: 80px; height: 80px; border-radius: 50%; border: none;
+            background: var(--glass-white); color: white; font-weight: bold;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.2); font-size: 12px;
+        }
+        .action-btn.primary {
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.4);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; text-shadow: 0 0 10px var(--neon-glow); }
+            100% { opacity: 0.7; }
+        }
+
+        /* 動態背景粒子 (CSS 模擬) */
+        .nebula-particle {
+            position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%;
+            opacity: 0.3; animation: drift 10s infinite linear;
         }
     </style>
 </head>
 <body>
 
-<div class="ai-area">
-    <div class="avatar">🤖</div>
-    <div id="ai-info">AI Opponent<br><small id="ai-chips">Chips: $1000</small></div>
+<div class="oracle-hud">
+    <div class="probability-meter">ORACLE WIN RATE: <span id="win-rate">--%</span></div>
 </div>
 
-<div class="table-center">
-    <div class="pot-box">POT: $<span id="pot-val">0</span></div>
-    <div class="cards-row" id="comm-cards"></div>
-    <p id="game-status" style="margin-top: 20px; font-size: 0.9rem; color: white; font-weight: 500;">等待開始...</p>
-</div>
-
-<div class="player-control">
-    <div class="player-status">
-        <span>YOUR HAND <small id="hand-type" style="color:var(--ios-blue)"></small></span>
-        <span id="player-chips">Chips: $1000</span>
+<div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 40px;">
+    <div id="ai-hand" class="card-container">
+        <div class="card back"></div>
+        <div class="card back"></div>
     </div>
-    <div class="cards-row" id="player-hand" style="justify-content:center; margin-bottom: 20px;"></div>
-    
-    <div class="action-btns">
-        <button class="btn fold" onclick="game.fold()">FOLD</button>
-        <button class="btn" onclick="game.checkCall()" id="call-btn">CHECK</button>
-        <button class="btn primary" onclick="game.raise()" id="raise-btn">RAISE $100</button>
+
+    <div id="comm-area" class="card-container">
+        <div class="card back"></div><div class="card back"></div>
+        <div class="card back"></div><div class="card back"></div>
+        <div class="card back"></div>
     </div>
+
+    <div id="player-hand" class="card-container"></div>
 </div>
 
-<div id="toast" class="message-toast"></div>
+<div class="control-wheel">
+    <div style="margin-bottom: 20px; font-weight: bold; color: var(--nebula-blue);">
+        POT: $<span id="pot-display">0</span> | CHIPS: $<span id="chips-display">1000</span>
+    </div>
+    <div class="main-actions">
+        <button class="action-btn" onclick="game.action('FOLD')">❌<br>FOLD</button>
+        <button class="action-btn" onclick="game.action('CALL')">🪙<br>CALL</button>
+        <button class="action-btn primary" onclick="game.action('RAISE')">🔥<br>RAISE</button>
+    </div>
+</div>
 
 <script>
-// --- 核心工具 ---
-const SUITS = {'S':'♠', 'H':'♥', 'D':'♦', 'C':'♣'};
-const RANKS = '23456789TJQKA';
+    const RANKS = '23456789TJQKA';
+    const SUITS = {S:'♠', H:'♥', D:'♦', C:'♣'};
 
-class PokerGame {
-    constructor() {
-        this.deck = [];
-        this.pChips = 1000;
-        this.aChips = 1000;
-        this.pot = 0;
-        this.comm = [];
-        this.pHand = [];
-        this.aHand = [];
-        this.phase = 0; // 0: Preflop, 1: Flop, 2: Turn, 3: River, 4: Showdown
-        this.currentBet = 0;
-        this.initGame();
-    }
-
-    initGame() {
-        this.deck = [];
-        for (let r of RANKS) for (let s in SUITS) this.deck.push({r, s});
-        this.shuffle();
-        this.pHand = [this.deck.pop(), this.deck.pop()];
-        this.aHand = [this.deck.pop(), this.deck.pop()];
-        this.comm = [];
-        this.pot = 0;
-        this.phase = 0;
-        this.currentBet = 0;
-        this.render();
-        this.showToast("新牌局開始");
-    }
-
-    shuffle() {
-        for (let i = this.deck.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
+    class NebulaPoker {
+        constructor() {
+            this.chips = 1000;
+            this.pot = 0;
+            this.phase = 0;
+            this.deck = [];
+            this.comm = [];
+            this.player = [];
+            this.init();
         }
-    }
 
-    render() {
-        // 渲染玩家手牌
-        const pH = document.getElementById('player-hand');
-        pH.innerHTML = this.pHand.map(c => this.cardHTML(c)).join('');
-        
-        // 渲染公牌
-        const cC = document.getElementById('comm-cards');
-        cC.innerHTML = this.comm.map(c => this.cardHTML(c)).join('') + 
-                      Array(5 - this.comm.length).fill('<div class="card back"></div>').join('');
-
-        document.getElementById('pot-val').innerText = this.pot;
-        document.getElementById('player-chips').innerText = `Chips: $${this.pChips}`;
-        document.getElementById('ai-chips').innerText = `Chips: $${this.aChips}`;
-        
-        const score = this.evaluate([...this.pHand, ...this.comm]);
-        document.getElementById('hand-type').innerText = score.name;
-    }
-
-    cardHTML(card) {
-        const isRed = card.s === 'H' || card.s === 'D';
-        return `<div class="card ${isRed ? 'red' : ''}">
-                    <div style="font-size:1.2rem">${card.r === 'T' ? '10' : card.r}</div>
-                    <div>${SUITS[card.s]}</div>
-                </div>`;
-    }
-
-    // --- 遊戲動作 ---
-    checkCall() {
-        this.showToast("你跟注了");
-        this.pChips -= this.currentBet;
-        this.pot += this.currentBet;
-        this.currentBet = 0;
-        this.nextPhase();
-    }
-
-    raise() {
-        const amt = 100;
-        this.pChips -= amt;
-        this.pot += amt;
-        this.showToast("你加注了 $100");
-        this.nextPhase();
-    }
-
-    fold() {
-        this.showToast("你棄牌了！AI 獲勝");
-        this.aChips += this.pot;
-        setTimeout(() => this.initGame(), 2000);
-    }
-
-    nextPhase() {
-        this.phase++;
-        if (this.phase === 1) this.comm.push(this.deck.pop(), this.deck.pop(), this.deck.pop());
-        else if (this.phase === 2 || this.phase === 3) this.comm.push(this.deck.pop());
-        else if (this.phase === 4) return this.resolveWinner();
-
-        this.render();
-        this.aiAction();
-    }
-
-    // --- 簡易 AI 邏輯 ---
-    aiAction() {
-        const aiScore = this.evaluate([...this.aHand, ...this.comm]);
-        // 模擬 AI 思考
-        setTimeout(() => {
-            if (aiScore.rank > 1) { // 如果 AI 有對子以上
-                this.aChips -= 50;
-                this.pot += 50;
-                this.showToast("AI 加注 $50");
-            } else {
-                this.showToast("AI 過牌");
-            }
+        init() {
+            this.deck = [];
+            for (let r of RANKS) for (let s in SUITS) this.deck.push({r, s});
+            this.deck.sort(() => Math.random() - 0.5);
+            this.player = [this.deck.pop(), this.deck.pop()];
             this.render();
-        }, 800);
-    }
-
-    // --- 牌型判定 (簡化版但具備完整邏輯) ---
-    evaluate(cards) {
-        if (cards.length < 5) return {name: 'High Card', rank: 0};
-        
-        const rankVals = cards.map(c => RANKS.indexOf(c.r)).sort((a,b) => b-a);
-        const counts = {};
-        rankVals.forEach(v => counts[v] = (counts[v] || 0) + 1);
-        const freq = Object.values(counts).sort((a,b) => b-a);
-
-        if (freq[0] === 4) return {name: 'Four of a Kind', rank: 7};
-        if (freq[0] === 3 && freq[1] === 2) return {name: 'Full House', rank: 6};
-        if (freq[0] === 3) return {name: 'Three of a Kind', rank: 3};
-        if (freq[0] === 2 && freq[1] === 2) return {name: 'Two Pair', rank: 2};
-        if (freq[0] === 2) return {name: 'One Pair', rank: 1};
-        
-        return {name: 'High Card', rank: 0};
-    }
-
-    resolveWinner() {
-        const pScore = this.evaluate([...this.pHand, ...this.comm]);
-        const aScore = this.evaluate([...this.aHand, ...this.comm]);
-        
-        let msg = "";
-        if (pScore.rank > aScore.rank) {
-            msg = `你贏了！${pScore.name}`;
-            this.pChips += this.pot;
-        } else if (aScore.rank > pScore.rank) {
-            msg = `AI 贏了！${aScore.name}`;
-            this.aChips += this.pot;
-        } else {
-            msg = "平局！分池";
-            this.pChips += this.pot/2; this.aChips += this.pot/2;
+            this.updateOracle();
         }
-        
-        document.getElementById('game-status').innerText = msg;
-        this.showToast(msg);
-        setTimeout(() => this.initGame(), 3000);
+
+        render() {
+            const pH = document.getElementById('player-hand');
+            pH.innerHTML = this.player.map(c => this.createCardHTML(c)).join('');
+            
+            const cH = document.getElementById('comm-area');
+            cH.innerHTML = this.comm.map(c => this.createCardHTML(c)).join('') + 
+                          Array(5 - this.comm.length).fill('<div class="card back"></div>').join('');
+            
+            document.getElementById('pot-display').innerText = this.pot;
+            document.getElementById('chips-display').innerText = this.chips;
+        }
+
+        createCardHTML(card) {
+            const isRed = card.s === 'H' || card.s === 'D';
+            return `<div class="card ${isRed ? 'red' : ''}">
+                <div style="font-size:1.5rem">${card.r === 'T' ? '10' : card.r}</div>
+                <div style="font-size:1.2rem">${SUITS[card.s]}</div>
+            </div>`;
+        }
+
+        action(type) {
+            if (type === 'RAISE') {
+                this.chips -= 100;
+                this.pot += 100;
+            } else if (type === 'CALL') {
+                this.chips -= 50;
+                this.pot += 50;
+            } else if (type === 'FOLD') {
+                alert("你棄牌了");
+                return location.reload();
+            }
+
+            this.phase++;
+            if (this.phase === 1) this.comm.push(this.deck.pop(), this.deck.pop(), this.deck.pop());
+            else if (this.phase === 2 || this.phase === 3) this.comm.push(this.deck.pop());
+            else if (this.phase === 4) alert("結算完成！");
+
+            this.render();
+            this.updateOracle();
+        }
+
+        // 賣點邏輯: 模擬預測演算法
+        updateOracle() {
+            let baseProb = 20;
+            if (this.player[0].r === this.player[1].r) baseProb += 30; // 對子
+            const r1 = RANKS.indexOf(this.player[0].r);
+            const r2 = RANKS.indexOf(this.player[1].r);
+            if (r1 > 10 || r2 > 10) baseProb += 15; // 高牌
+            
+            const finalProb = Math.min(99, baseProb + (this.phase * 10));
+            document.getElementById('win-rate').innerText = `${finalProb}%`;
+        }
     }
 
-    showToast(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 1500);
-    }
-}
+    const game = new NebulaPoker();
 
-const game = new PokerGame();
+    // 增加背景裝飾粒子
+    for(let i=0; i<30; i++) {
+        const p = document.createElement('div');
+        p.className = 'nebula-particle';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.top = Math.random() * 100 + 'vh';
+        p.style.animationDelay = Math.random() * 5 + 's';
+        document.body.appendChild(p);
+    }
 </script>
 
 </body>
